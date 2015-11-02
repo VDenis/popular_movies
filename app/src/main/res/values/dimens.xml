@@ -11,4 +11,11 @@
 
     <dimen name="custom_activity_horizontal_margin">0dp</dimen>
     <dimen name="custom_activity_vertical_margin">0dp</dimen>
+    <dimen name="title_page_padding">30dp</dimen>
+    <dimen name="title_page_textsize">24sp</dimen>
+    <dimen name="details_image_view_margin">10dp</dimen>
+    <dimen name="details_linear_layout_margin">10dp</dimen>
+    <dimen name="details_text_view_margin">5dp</dimen>
+    <dimen name="discovery_grid_view_column_width">150dp</dimen>
+    <dimen name="grid_item_movie_image_view_height">250dp</dimen>
 </resources>

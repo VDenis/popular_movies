@@ -16,6 +16,10 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+        buildTypes.each {
+//            it.buildConfigField 'String', 'THE_MOVIE_DB_API_TOKEN', MyTheMovieDBApiToken
+            it.buildConfigField 'String', 'THE_MOVIE_DB_API_TOKEN', "$System.env.THE_MOVIE_DB_API_TOKEN"
+        }
     }
 }
 

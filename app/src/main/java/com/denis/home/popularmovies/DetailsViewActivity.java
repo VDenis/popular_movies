@@ -19,9 +19,10 @@ public class DetailsViewActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        getFragmentManager().beginTransaction()
-                .add(R.id.details_view_container, new DetailsViewFragment()).commit();
-
+        if (savedInstanceState == null) {
+            getFragmentManager().beginTransaction()
+                    .add(R.id.details_view_container, new DetailsViewFragment()).commit();
+        }
 /*        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -35,7 +36,7 @@ public class DetailsViewActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        // Without Menu getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 

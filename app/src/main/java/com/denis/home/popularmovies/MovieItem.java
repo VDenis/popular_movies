@@ -6,6 +6,7 @@ import android.os.Parcelable;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Comparator;
 import java.util.Date;
 
 /**
@@ -17,14 +18,16 @@ public class MovieItem implements Parcelable {
     String title;
     String overview;
     double voteAverage;
+    double popularity;
     String releaseDate;
 
-    public MovieItem(int id, String poster, String title, String overview, double voteAverage, String releaseDate) {
+    public MovieItem(int id, String poster, String title, String overview, double voteAverage, double popularity, String releaseDate) {
         this.id = id;
         this.poster = poster;
         this.title = title;
         this.overview = overview;
         this.voteAverage = voteAverage;
+        this.popularity = popularity;
         this.releaseDate = releaseDate;
     }
 
@@ -34,13 +37,26 @@ public class MovieItem implements Parcelable {
         title = in.readString();
         overview = in.readString();
         voteAverage = in.readDouble();
+        popularity = in.readDouble();
         releaseDate = in.readString();
     }
 
-    public String getYearFromReleaseDate() {
-        String convertString = "";
-        return convertString;
-    }
+
+    public static Comparator<MovieItem> COMPARE_BY_POPULARITY_DESC = new Comparator<MovieItem>() {
+        public int compare(MovieItem one, MovieItem other) {
+            // Reverse for sort by desc
+            return Double.compare(other.popularity, one.popularity);
+        }
+    };
+
+    public static Comparator<MovieItem> COMPARE_BY_VOTE_AVERAGE_DESC = new Comparator<MovieItem>() {
+        public int compare(MovieItem one, MovieItem other) {
+            //return one.title.compareTo(other.title);
+            // Reverse for sort by desc
+            return Double.compare(other.voteAverage, one.voteAverage);
+        }
+    };
+
 
     @Override
     public int describeContents() {
@@ -54,6 +70,7 @@ public class MovieItem implements Parcelable {
         dest.writeString(title);
         dest.writeString(overview);
         dest.writeDouble(voteAverage);
+        dest.writeDouble(popularity);
         dest.writeString(releaseDate);
     }
 
