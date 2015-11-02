@@ -48,7 +48,7 @@ public class DetailsViewFragment extends Fragment {
                     .setText(movie.releaseDate);
 
             ((TextView) rootView.findViewById(R.id.detail_movie_voteAverage))
-                    .setText(String.format("%s: %.2f", getString(R.string.label_voteAverage), movie.voteAverage) + SCORE_FROM);
+                    .setText(String.format("%s: %.1f", getString(R.string.label_voteAverage), movie.voteAverage) + SCORE_FROM);
 
             ((TextView) rootView.findViewById(R.id.detail_movie_popularity))
                     .setText(String.format("%s: %.2f", getString(R.string.label_popularity), movie.popularity));

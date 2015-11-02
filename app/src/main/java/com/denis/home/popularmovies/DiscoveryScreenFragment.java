@@ -94,11 +94,11 @@ public class DiscoveryScreenFragment extends Fragment {
         private ArrayList<MovieItem> getPopularMoviesDataFromJson(String popularMoviesJsonStr, int numPages)
                 throws JSONException {
 
-            SharedPreferences sharedPrefs =
+/*            SharedPreferences sharedPrefs =
                     PreferenceManager.getDefaultSharedPreferences(getActivity());
             String sortBy = sharedPrefs.getString(
                     getString(R.string.pref_sort_by_key),
-                    getString(R.string.pref_sort_by_most_popular));
+                    getString(R.string.pref_sort_by_most_popular));*/
 
             // These are the names of the JSON objects that need to be extracted.
             final String TMDB_ID = "id";
@@ -119,7 +119,14 @@ public class DiscoveryScreenFragment extends Fragment {
                 JSONObject movieJson = moviesArrayJson.getJSONObject(i);
 
                 int id = movieJson.getInt(TMDB_ID);
-                String poster = Constants.MOVIES_BASE_URL + Constants.getImageQuality() + movieJson.getString(TMDB_POSTER);
+
+                String tempPoster = movieJson.getString(TMDB_POSTER);
+                String poster = "";
+
+                if (!tempPoster.contains("null")) {
+                    poster = Constants.MOVIES_BASE_URL + Constants.getImageQuality() + tempPoster;
+                }
+
                 String title = movieJson.getString(TMDB_TITLE);
                 String overview = movieJson.getString(TMDB_OVERVIEW);
                 double voteAverage = movieJson.getDouble(TMDB_VOTE_AVERAGE);
@@ -129,14 +136,14 @@ public class DiscoveryScreenFragment extends Fragment {
                 moviesList.add(new MovieItem(id, poster, title, overview, voteAverage, popularity, releseDate));
             }
 
-            Log.d(LOG_TAG, "Sort by: " + sortBy);
+/*            Log.d(LOG_TAG, "Sort by: " + sortBy);
             if (sortBy.equals(getString(R.string.pref_sort_by_most_popular))) {
                 Collections.sort(moviesList, MovieItem.COMPARE_BY_POPULARITY_DESC);
             } else if (sortBy.equals(getString(R.string.pref_sort_by_highest_rated))) {
                 Collections.sort(moviesList, MovieItem.COMPARE_BY_VOTE_AVERAGE_DESC);
             } else {
                 Log.d(LOG_TAG, "SortBy not found: " + sortBy);
-            }
+            }*/
 
             return moviesList;
         }
@@ -156,22 +163,26 @@ public class DiscoveryScreenFragment extends Fragment {
             try {
                 final String POPULAR_MOVIES_BASE_URL = "http://api.themoviedb.org/3/discover/movie";
                 final String SORT_BY_PARAM = "sort_by";
+
+                // Sort by "popularity.desc" - default value
                 String sortBy = "popularity.desc";
                 final String API_KEY_PARAM = "api_key";
 
-/*                Uri builtUri = Uri.parse(POPULAR_MOVIES_BASE_URL).buildUpon()
-                        .appendQueryParameter(SORT_BY_PARAM, sortBy)
-                        .appendQueryParameter(API_KEY_PARAM, Constants.THE_MOVIE_DB_API_TOKEN)
-                        .build();*/
+                // Read sort by parameter from SharedPreferences
+                SharedPreferences sharedPrefs =
+                        PreferenceManager.getDefaultSharedPreferences(getActivity());
+                String sortBySetting = sharedPrefs.getString(
+                        getString(R.string.pref_sort_by_key),
+                        getString(R.string.pref_sort_by_most_popular));
 
-//                XmlResourceParser xml = new XmlResourceParser(); // = getXml();// getString(R.xml.api_keys.);
-                Resources res = getResources();
-/*                XmlResourceParser xml = res.getXml(R.xml.api_keys);*/
-
-/*                Uri builtUri = Uri.parse(POPULAR_MOVIES_BASE_URL).buildUpon()
-                        .appendQueryParameter(SORT_BY_PARAM, sortBy)
-                        .appendQueryParameter(API_KEY_PARAM, getString(R.string.THE_MOVIE_DB_API_TOKEN))
-                        .build();       */
+                Log.d(LOG_TAG, "Sort by: " + sortBySetting);
+                if (sortBySetting.equals(getString(R.string.pref_sort_by_most_popular))) {
+                    ;
+                } else if (sortBySetting.equals(getString(R.string.pref_sort_by_highest_rated))) {
+                    sortBy = "vote_average.desc";
+                } else {
+                    Log.d(LOG_TAG, "SortBy not found: " + sortBySetting);
+                }
 
                 Uri builtUri = Uri.parse(POPULAR_MOVIES_BASE_URL).buildUpon()
                         .appendQueryParameter(SORT_BY_PARAM, sortBy)

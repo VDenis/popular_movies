@@ -29,8 +29,13 @@ public class MovieAdapter extends ArrayAdapter<MovieItem> {
         }
 
         ImageView iconView = (ImageView) convertView.findViewById(R.id.grid_item_movie_imageview);
+        if (!androidMovie.poster.isEmpty()) {
 
-        Picasso.with(getContext()).load(androidMovie.poster).into(iconView);
+            Picasso.with(getContext()).load(androidMovie.poster).into(iconView);
+        }
+        else {
+            iconView.setImageResource(R.mipmap.ic_launcher);
+        }
 
         return convertView;
     }

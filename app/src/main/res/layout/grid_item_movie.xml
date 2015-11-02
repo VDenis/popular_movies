@@ -8,5 +8,5 @@
     android:layout_height="@dimen/grid_item_movie_image_view_height"
     android:scaleType="centerCrop"
     tools:src="@mipmap/ic_launcher">
-
 </ImageView>
+
