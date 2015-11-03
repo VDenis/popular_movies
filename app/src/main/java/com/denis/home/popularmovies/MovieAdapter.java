@@ -31,7 +31,8 @@ public class MovieAdapter extends ArrayAdapter<MovieItem> {
         ImageView iconView = (ImageView) convertView.findViewById(R.id.grid_item_movie_imageview);
         if (!androidMovie.poster.isEmpty()) {
 
-            Picasso.with(getContext()).load(androidMovie.poster).into(iconView);
+            //Picasso.with(getContext()).load(androidMovie.poster).into(iconView);
+            Picasso.with(getContext()).load(androidMovie.poster).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).into(iconView);
         }
         else {
             iconView.setImageResource(R.mipmap.ic_launcher);

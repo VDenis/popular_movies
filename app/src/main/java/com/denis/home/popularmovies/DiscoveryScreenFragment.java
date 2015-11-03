@@ -40,9 +40,27 @@ public class DiscoveryScreenFragment extends Fragment {
     public static final String PARCELABLE_MOVIE_ITEM = "PARCELABLE_MOVIE_ITEM";
 
     private MovieAdapter mMoviesAdapter;
+    ArrayList<MovieItem> movies;
 
     public DiscoveryScreenFragment() {
         // Required empty public constructor
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if(savedInstanceState == null || !savedInstanceState.containsKey("movies")) {
+            movies = new ArrayList<MovieItem>();
+        }
+        else {
+            movies = savedInstanceState.getParcelableArrayList("movies");
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putParcelableArrayList("movies", movies);
+        super.onSaveInstanceState(outState);
     }
 
 
@@ -54,7 +72,6 @@ public class DiscoveryScreenFragment extends Fragment {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_discovery_screen, container, false);
 
-        ArrayList<MovieItem> movies = new ArrayList<MovieItem>();
         mMoviesAdapter = new MovieAdapter(getActivity(), movies);
 
         GridView gridView = (GridView) rootView.findViewById(R.id.gridview_movie);
@@ -103,7 +120,7 @@ public class DiscoveryScreenFragment extends Fragment {
             // These are the names of the JSON objects that need to be extracted.
             final String TMDB_ID = "id";
             final String TMDB_RESULTS_LIST = "results";
-            final String TMDB_POSTER= "poster_path";
+            final String TMDB_POSTER = "poster_path";
             final String TMDB_TITLE = "original_title";
             final String TMDB_OVERVIEW = "overview";
             final String TMDB_VOTE_AVERAGE = "vote_average";
@@ -115,7 +132,7 @@ public class DiscoveryScreenFragment extends Fragment {
 
             ArrayList<MovieItem> moviesList = new ArrayList<>();
 
-            for(int i = 0; i < moviesArrayJson.length(); i++) {
+            for (int i = 0; i < moviesArrayJson.length(); i++) {
                 JSONObject movieJson = moviesArrayJson.getJSONObject(i);
 
                 int id = movieJson.getInt(TMDB_ID);
@@ -254,7 +271,7 @@ public class DiscoveryScreenFragment extends Fragment {
 
             if (movies != null) {
                 mMoviesAdapter.clear();
-                for(MovieItem movie : movies) {
+                for (MovieItem movie : movies) {
                     mMoviesAdapter.add(movie);
                 }
                 // New data is back from the server.  Hooray!
