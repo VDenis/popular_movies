@@ -25,10 +25,10 @@ public class MovieAdapter extends ArrayAdapter<MovieItem> {
 
         if (convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(
-                    R.layout.grid_item_movie, parent, false);
+                    R.layout.movie_item, parent, false);
         }
 
-        ImageView iconView = (ImageView) convertView.findViewById(R.id.grid_item_movie_imageview);
+        ImageView iconView = (ImageView) convertView.findViewById(R.id.discovery_movie_image);
         if (!androidMovie.poster.isEmpty()) {
 
             //Picasso.with(getContext()).load(androidMovie.poster).into(iconView);

@@ -3,8 +3,6 @@ package com.denis.home.popularmovies;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
-import android.content.res.XmlResourceParser;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -28,7 +26,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 
 
 /**
@@ -74,7 +71,7 @@ public class DiscoveryScreenFragment extends Fragment {
 
         mMoviesAdapter = new MovieAdapter(getActivity(), movies);
 
-        GridView gridView = (GridView) rootView.findViewById(R.id.gridview_movie);
+        GridView gridView = (GridView) rootView.findViewById(R.id.movies_grid);
         gridView.setAdapter(mMoviesAdapter);
 
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -93,7 +90,7 @@ public class DiscoveryScreenFragment extends Fragment {
 
 
     private void updatePopularMovies() {
-        FetchPopularMoviesTask popularMoviesTask = new FetchPopularMoviesTask();
+        FetchMoviesTask popularMoviesTask = new FetchMoviesTask();
         popularMoviesTask.execute();
     }
 
@@ -105,8 +102,8 @@ public class DiscoveryScreenFragment extends Fragment {
     }
 
 
-    public class FetchPopularMoviesTask extends AsyncTask<String, Void, ArrayList<MovieItem>> {
-        private final String LOG_TAG = FetchPopularMoviesTask.class.getSimpleName();
+    public class FetchMoviesTask extends AsyncTask<String, Void, ArrayList<MovieItem>> {
+        private final String LOG_TAG = FetchMoviesTask.class.getSimpleName();
 
         private ArrayList<MovieItem> getPopularMoviesDataFromJson(String popularMoviesJsonStr, int numPages)
                 throws JSONException {

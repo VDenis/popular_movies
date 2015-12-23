@@ -3,11 +3,7 @@ package com.denis.home.popularmovies;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Comparator;
-import java.util.Date;
 
 /**
  * Created by Denis on 29.10.2015.
@@ -42,22 +38,6 @@ public class MovieItem implements Parcelable {
     }
 
 
-    public static Comparator<MovieItem> COMPARE_BY_POPULARITY_DESC = new Comparator<MovieItem>() {
-        public int compare(MovieItem one, MovieItem other) {
-            // Reverse for sort by desc
-            return Double.compare(other.popularity, one.popularity);
-        }
-    };
-
-    public static Comparator<MovieItem> COMPARE_BY_VOTE_AVERAGE_DESC = new Comparator<MovieItem>() {
-        public int compare(MovieItem one, MovieItem other) {
-            //return one.title.compareTo(other.title);
-            // Reverse for sort by desc
-            return Double.compare(other.voteAverage, one.voteAverage);
-        }
-    };
-
-
     @Override
     public int describeContents() {
         return 0;
@@ -83,6 +63,24 @@ public class MovieItem implements Parcelable {
         @Override
         public MovieItem[] newArray(int size) {
             return new MovieItem[size];
+        }
+    };
+
+    // Using for sorting
+    public static Comparator<MovieItem> COMPARE_BY_POPULARITY_DESC = new Comparator<MovieItem>() {
+        @Override
+        public int compare(MovieItem one, MovieItem other) {
+            // Reverse for sort by desc
+            return Double.compare(other.popularity, one.popularity);
+        }
+    };
+
+    public static Comparator<MovieItem> COMPARE_BY_VOTE_AVERAGE_DESC = new Comparator<MovieItem>() {
+        @Override
+        public int compare(MovieItem one, MovieItem other) {
+            //return one.title.compareTo(other.title);
+            // Reverse for sort by desc
+            return Double.compare(other.voteAverage, one.voteAverage);
         }
     };
 }
