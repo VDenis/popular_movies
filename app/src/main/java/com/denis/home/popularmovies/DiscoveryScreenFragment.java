@@ -1,19 +1,20 @@
 package com.denis.home.popularmovies;
 
 
+import android.app.Fragment;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.app.Fragment;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
+
+import com.denis.home.popularmovies.data.MoviesContract;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -34,7 +35,38 @@ import java.util.ArrayList;
 public class DiscoveryScreenFragment extends Fragment {
 
     private final String LOG_TAG = DiscoveryScreenFragment.class.getSimpleName();
+
+    // For savedInstanceState
     public static final String PARCELABLE_MOVIE_ITEM = "PARCELABLE_MOVIE_ITEM";
+
+    public static final String EXTRA_MOVIE_ITEM = "EXTRA_MOVIE_ITEM";
+
+    // Load favorites from database true, For AsyncTask
+    public static final String LOAD_FAVORITES = "LOAD_FAVORITES_FROM_DB";
+    public static final String LOAD_NOT_FAVORITES = "LOAD_NOT_FAVORITES";
+
+    // For ContentProvider
+    private static final String[] MOVIE_COLUMNS = {
+            //MoviesContract.MovieEntry._ID,
+            MoviesContract.MovieEntry.COLUMN_MOVIE_ID,
+            MoviesContract.MovieEntry.COLUMN_POSTER,
+            MoviesContract.MovieEntry.COLUMN_BACKDROP,
+            MoviesContract.MovieEntry.COLUMN_TITLE,
+            MoviesContract.MovieEntry.COLUMN_OVERVIEW,
+            MoviesContract.MovieEntry.COLUMN_VOTE_AVERAGE,
+            MoviesContract.MovieEntry.COLUMN_POPULARITY,
+            MoviesContract.MovieEntry.COLUMN_RELEASE_DATE
+    };
+    //static final int COL__ID = 0;
+    static final int COL_COLUMN_MOVIE_ID = 0;
+    static final int COL_COLUMN_POSTER = 1;
+    static final int COL_COLUMN_BACKDROP = 2;
+    static final int COL_COLUMN_TITLE = 3;
+    static final int COL_COLUMN_OVERVIEW = 4;
+    static final int COL_COLUMN_VOTE_AVERAGE = 5;
+    static final int COL_COLUMN_POPULARITY = 6;
+    static final int COL_COLUMN_RELEASE_DATE = 7;
+
 
     private MovieAdapter mMoviesAdapter;
     ArrayList<MovieItem> movies;
@@ -46,17 +78,16 @@ public class DiscoveryScreenFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(savedInstanceState == null || !savedInstanceState.containsKey("movies")) {
+        if (savedInstanceState == null || !savedInstanceState.containsKey(PARCELABLE_MOVIE_ITEM)) {
             movies = new ArrayList<MovieItem>();
-        }
-        else {
-            movies = savedInstanceState.getParcelableArrayList("movies");
+        } else {
+            movies = savedInstanceState.getParcelableArrayList(PARCELABLE_MOVIE_ITEM);
         }
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        outState.putParcelableArrayList("movies", movies);
+        outState.putParcelableArrayList(PARCELABLE_MOVIE_ITEM, movies);
         super.onSaveInstanceState(outState);
     }
 
@@ -80,7 +111,7 @@ public class DiscoveryScreenFragment extends Fragment {
 
                 Log.d(LOG_TAG, "Click in movie");
 
-                Intent intent = new Intent(getActivity(), DetailsViewActivity.class).putExtra(PARCELABLE_MOVIE_ITEM, mMoviesAdapter.getItem(position));
+                Intent intent = new Intent(getActivity(), DetailsViewActivity.class).putExtra(EXTRA_MOVIE_ITEM, mMoviesAdapter.getItem(position));
                 startActivity(intent);
             }
         });
@@ -91,7 +122,19 @@ public class DiscoveryScreenFragment extends Fragment {
 
     private void updatePopularMovies() {
         FetchMoviesTask popularMoviesTask = new FetchMoviesTask();
-        popularMoviesTask.execute();
+
+        if (Utility.getPreferredSortOrder(getActivity()).equals(getString(R.string.pref_sort_by_favorites))) {
+            popularMoviesTask.execute(LOAD_FAVORITES);
+        }
+        else {
+            // Load from internet
+            if (Utility.isNetworkAvailable(getActivity())) {
+                popularMoviesTask.execute(LOAD_NOT_FAVORITES);
+            } else {
+                // no internet connection
+
+            }
+        }
     }
 
     @Override
@@ -108,16 +151,11 @@ public class DiscoveryScreenFragment extends Fragment {
         private ArrayList<MovieItem> getPopularMoviesDataFromJson(String popularMoviesJsonStr, int numPages)
                 throws JSONException {
 
-/*            SharedPreferences sharedPrefs =
-                    PreferenceManager.getDefaultSharedPreferences(getActivity());
-            String sortBy = sharedPrefs.getString(
-                    getString(R.string.pref_sort_by_key),
-                    getString(R.string.pref_sort_by_most_popular));*/
-
             // These are the names of the JSON objects that need to be extracted.
             final String TMDB_ID = "id";
             final String TMDB_RESULTS_LIST = "results";
             final String TMDB_POSTER = "poster_path";
+            final String TMDB_BACKDROP = "backdrop_path";
             final String TMDB_TITLE = "original_title";
             final String TMDB_OVERVIEW = "overview";
             final String TMDB_VOTE_AVERAGE = "vote_average";
@@ -134,20 +172,27 @@ public class DiscoveryScreenFragment extends Fragment {
 
                 int id = movieJson.getInt(TMDB_ID);
 
-                String tempPoster = movieJson.getString(TMDB_POSTER);
                 String poster = "";
+                String tempPoster = movieJson.getString(TMDB_POSTER);
 
                 if (!tempPoster.contains("null")) {
                     poster = Constants.MOVIES_BASE_URL + Constants.getImageQuality() + tempPoster;
+                }
+
+                String backdrop = "";
+                String tempBackdrop = movieJson.getString(TMDB_BACKDROP);
+
+                if (!tempBackdrop.contains("null")) {
+                    backdrop = Constants.MOVIES_BASE_URL + Constants.getImageQuality() + tempBackdrop;
                 }
 
                 String title = movieJson.getString(TMDB_TITLE);
                 String overview = movieJson.getString(TMDB_OVERVIEW);
                 double voteAverage = movieJson.getDouble(TMDB_VOTE_AVERAGE);
                 double popularity = movieJson.getDouble(TMDB_POPULARITY);
-                String releseDate = movieJson.getString(TMDB_RELESE_DATE);
+                String releaseDate = movieJson.getString(TMDB_RELESE_DATE);
 
-                moviesList.add(new MovieItem(id, poster, title, overview, voteAverage, popularity, releseDate));
+                moviesList.add(new MovieItem(id, poster, backdrop, title, overview, voteAverage, popularity, releaseDate));
             }
 
 /*            Log.d(LOG_TAG, "Sort by: " + sortBy);
@@ -164,98 +209,158 @@ public class DiscoveryScreenFragment extends Fragment {
 
         @Override
         protected ArrayList<MovieItem> doInBackground(String... params) {
-/*            if (params.length == 0) {
+            if (params.length == 0) {
                 return null;
-            }*/
-
-            Log.i(LOG_TAG, "doInBackground");
-
-            HttpURLConnection urlConnection = null;
-            BufferedReader reader = null;
-            String popularMoviesJsonStr = null;
-
-            try {
-                final String POPULAR_MOVIES_BASE_URL = "http://api.themoviedb.org/3/discover/movie";
-                final String SORT_BY_PARAM = "sort_by";
-
-                // Sort by "popularity.desc" - default value
-                String sortBy = "popularity.desc";
-                final String API_KEY_PARAM = "api_key";
-
-                // Read sort by parameter from SharedPreferences
-                SharedPreferences sharedPrefs =
-                        PreferenceManager.getDefaultSharedPreferences(getActivity());
-                String sortBySetting = sharedPrefs.getString(
-                        getString(R.string.pref_sort_by_key),
-                        getString(R.string.pref_sort_by_most_popular));
-
-                Log.d(LOG_TAG, "Sort by: " + sortBySetting);
-                if (sortBySetting.equals(getString(R.string.pref_sort_by_most_popular))) {
-                    ;
-                } else if (sortBySetting.equals(getString(R.string.pref_sort_by_highest_rated))) {
-                    sortBy = "vote_average.desc";
-                } else {
-                    Log.d(LOG_TAG, "SortBy not found: " + sortBySetting);
-                }
-
-                Uri builtUri = Uri.parse(POPULAR_MOVIES_BASE_URL).buildUpon()
-                        .appendQueryParameter(SORT_BY_PARAM, sortBy)
-                        .appendQueryParameter(API_KEY_PARAM, BuildConfig.THE_MOVIE_DB_API_TOKEN)
-                        .build();
-
-                URL url = new URL(builtUri.toString());
-
-                Log.d(LOG_TAG, "Built URI " + builtUri.toString());
-
-                urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("GET");
-                urlConnection.connect();
-
-                // Read the input stream into a String
-                InputStream inputStream = urlConnection.getInputStream();
-                StringBuffer buffer = new StringBuffer();
-                if (inputStream == null) {
-                    // Nothing to do.
-                    return null;
-                }
-                reader = new BufferedReader(new InputStreamReader(inputStream));
-
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-                    // But it does make debugging a *lot* easier if you print out the completed
-                    // buffer for debugging.
-                    buffer.append(line + "\n");
-                }
-
-                if (buffer.length() == 0) {
-                    // Stream was empty.  No point in parsing.
-                    return null;
-                }
-                popularMoviesJsonStr = buffer.toString();
-
-                Log.d(LOG_TAG, "Forecast string: " + popularMoviesJsonStr);
-            } catch (IOException e) {
-                Log.e(LOG_TAG, "Error", e);
-                return null;
-            } finally {
-                if (urlConnection != null) {
-                    urlConnection.disconnect();
-                }
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (final IOException e) {
-                        Log.e(LOG_TAG, "Error closing stream", e);
-                    }
-                }
             }
 
-            try {
-                return getPopularMoviesDataFromJson(popularMoviesJsonStr, 1);
-            } catch (JSONException e) {
-                Log.e(LOG_TAG, e.getMessage(), e);
-                e.printStackTrace();
+            // load from internet
+            if (params[0].equals(LOAD_NOT_FAVORITES)) {
+
+                Log.i(LOG_TAG, "doInBackground");
+
+                HttpURLConnection urlConnection = null;
+                BufferedReader reader = null;
+                String popularMoviesJsonStr = null;
+
+                try {
+                    final String POPULAR_MOVIES_BASE_URL = "http://api.themoviedb.org/3/discover/movie";
+                    final String SORT_BY_PARAM = "sort_by";
+
+                    // Sort by "popularity.desc" - default value
+                    String sortBy = "popularity.desc";
+                    final String API_KEY_PARAM = "api_key";
+
+                    // Read sort by parameter from SharedPreferences
+                    String sortBySetting = Utility.getPreferredSortOrder(getActivity());
+
+                    Log.d(LOG_TAG, "Sort by: " + sortBySetting);
+                    if (sortBySetting.equals(getString(R.string.pref_sort_by_most_popular))) {
+                        ;
+                    } else if (sortBySetting.equals(getString(R.string.pref_sort_by_highest_rated))) {
+                        sortBy = "vote_average.desc";
+                    } else {
+                        Log.d(LOG_TAG, "SortBy not found: " + sortBySetting);
+                    }
+
+                    Uri builtUri = Uri.parse(POPULAR_MOVIES_BASE_URL).buildUpon()
+                            .appendQueryParameter(SORT_BY_PARAM, sortBy)
+                            .appendQueryParameter(API_KEY_PARAM, BuildConfig.THE_MOVIE_DB_API_TOKEN)
+                            .build();
+
+                    URL url = new URL(builtUri.toString());
+
+                    Log.d(LOG_TAG, "Built URI " + builtUri.toString());
+
+                    urlConnection = (HttpURLConnection) url.openConnection();
+                    urlConnection.setRequestMethod("GET");
+                    urlConnection.connect();
+
+                    // Read the input stream into a String
+                    InputStream inputStream = urlConnection.getInputStream();
+                    StringBuffer buffer = new StringBuffer();
+                    if (inputStream == null) {
+                        // Nothing to do.
+                        return null;
+                    }
+                    reader = new BufferedReader(new InputStreamReader(inputStream));
+
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
+                        // But it does make debugging a *lot* easier if you print out the completed
+                        // buffer for debugging.
+                        buffer.append(line + "\n");
+                    }
+
+                    if (buffer.length() == 0) {
+                        // Stream was empty.  No point in parsing.
+                        return null;
+                    }
+                    popularMoviesJsonStr = buffer.toString();
+
+                    Log.d(LOG_TAG, "Forecast string: " + popularMoviesJsonStr);
+                } catch (IOException e) {
+                    Log.e(LOG_TAG, "Error", e);
+                    return null;
+                } finally {
+                    if (urlConnection != null) {
+                        urlConnection.disconnect();
+                    }
+                    if (reader != null) {
+                        try {
+                            reader.close();
+                        } catch (final IOException e) {
+                            Log.e(LOG_TAG, "Error closing stream", e);
+                        }
+                    }
+                }
+
+                try {
+                    return getPopularMoviesDataFromJson(popularMoviesJsonStr, 1);
+                } catch (JSONException e) {
+                    Log.e(LOG_TAG, e.getMessage(), e);
+                    e.printStackTrace();
+                }
+            } // load from content provider
+            else {
+                Cursor mCursor = getActivity().getContentResolver().query(
+                        MoviesContract.MovieEntry.CONTENT_URI,   // The content URI of the words table
+                        MOVIE_COLUMNS,                        // The columns to return for each row
+                        null,                    // Selection criteria
+                        null,                     // Selection criteria
+                        null);                        // The sort order for the returned rows
+                // Some providers return null if an error occurs, others throw an exception
+                if (mCursor == null) {
+                /*
+                 * Insert code here to handle the error. Be sure not to use the cursor! You may want to
+                 * call android.util.Log.e() to log this error.
+                 *
+                 */
+                // If the Cursor is empty, the provider found no matches
+                } else if (mCursor.getCount() < 1) {
+
+                /*
+                 * Insert code here to notify the user that the search was unsuccessful. This isn't necessarily
+                 * an error. You may want to offer the user the option to insert a new row, or re-type the
+                 * search term.
+                 */
+
+                } else {
+                    // Insert code here to do something with the results
+
+                    ArrayList<MovieItem> moviesList = new ArrayList<>();
+                    while (mCursor.moveToNext()) {
+                        // Gets the value from the column.
+
+                        int id = mCursor.getInt(COL_COLUMN_MOVIE_ID);
+
+                        // TODO: check poster
+                        String poster = "";
+                        String tempPoster = mCursor.getString(COL_COLUMN_POSTER);
+
+                        if (!tempPoster.contains("null")) {
+                            poster = Constants.MOVIES_BASE_URL + Constants.getImageQuality() + tempPoster;
+                        }
+
+                        String backdrop = "";
+                        String tempBackdrop = mCursor.getString(COL_COLUMN_BACKDROP);
+
+                        if (!tempBackdrop.contains("null")) {
+                            backdrop = Constants.MOVIES_BASE_URL + Constants.getImageQuality() + tempBackdrop;
+                        }
+
+                        String title = mCursor.getString(COL_COLUMN_TITLE);
+                        String overview = mCursor.getString(COL_COLUMN_OVERVIEW);
+                        double voteAverage = mCursor.getDouble(COL_COLUMN_VOTE_AVERAGE);
+                        double popularity = mCursor.getDouble(COL_COLUMN_POPULARITY);
+                        String releseDate = mCursor.getString(COL_COLUMN_RELEASE_DATE);
+
+                        moviesList.add(new MovieItem(id, poster, backdrop, title, overview, voteAverage, popularity, releseDate));
+                        // end of while loop
+                    }
+                    mCursor.close();
+                    return moviesList;
+                }
             }
 
             return null;
@@ -266,12 +371,18 @@ public class DiscoveryScreenFragment extends Fragment {
             //super.onPostExecute(movies);
             Log.i(LOG_TAG, "onPostExecute");
 
-            if (movies != null) {
+/*            if (movies != null) {
                 mMoviesAdapter.clear();
                 for (MovieItem movie : movies) {
                     mMoviesAdapter.add(movie);
                 }
                 // New data is back from the server.  Hooray!
+            }*/
+
+            mMoviesAdapter.clear();
+
+            if (movies != null) {
+                mMoviesAdapter.addAll(movies);
             }
         }
     }

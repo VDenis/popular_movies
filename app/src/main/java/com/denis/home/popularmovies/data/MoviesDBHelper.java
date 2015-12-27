@@ -27,14 +27,18 @@ public class MoviesDBHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
         final String SQL_CREATE_MOVIE_TABLE = "CREATE TABLE " + MovieEntry.TABLE_NAME + " (" +
                 MovieEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                MovieEntry.COLUMN_MOVIE_ID + " INTEGER NOT NULL, " +
-                MovieEntry.COLUMN_POSTER + " TEXT NOT NULL, " +
-                MovieEntry.COLUMN_TITLE + " TEXT NOT NULL, " +
-                MovieEntry.COLUMN_OVERVIEW + " TEXT NOT NULL, " +
-                MovieEntry.COLUMN_VOTE_AVERAGE + " REAL NOT NULL, " +
-                MovieEntry.COLUMN_POPULARITY + " REAL NOT NULL, " +
-                MovieEntry.COLUMN_RELEASE_DATE + " INTEGER NOT NULL " +
-                " );";
+                MovieEntry.COLUMN_MOVIE_ID + " INTEGER, " +
+                MovieEntry.COLUMN_POSTER + " TEXT, " +
+                MovieEntry.COLUMN_BACKDROP + " TEXT, " +
+                MovieEntry.COLUMN_TITLE + " TEXT, " +
+                MovieEntry.COLUMN_OVERVIEW + " TEXT, " +
+                MovieEntry.COLUMN_VOTE_AVERAGE + " REAL, " +
+                MovieEntry.COLUMN_POPULARITY + " REAL, " +
+                MovieEntry.COLUMN_RELEASE_DATE + " INTEGER," +
+                " UNIQUE (" + MovieEntry.COLUMN_MOVIE_ID + ") ON CONFLICT REPLACE);";/* +
+                " );";*/
+
+
 
 /*        final String SQL_CREATE_REVIEW_TABLE = "CREATE TABLE " + ReviewEntry.TABLE_NAME + " (" +
                 ReviewEntry._ID + "INTEGER PRIMARY KEY, " +

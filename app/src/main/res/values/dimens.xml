@@ -17,5 +17,11 @@
     <dimen name="details_linear_layout_margin">10dp</dimen>
     <dimen name="details_text_view_margin">5dp</dimen>
     <dimen name="discovery_grid_view_column_width">150dp</dimen>
-    <dimen name="grid_item_movie_image_view_height">200dp</dimen><!--250-->
+    <dimen name="grid_item_movie_image_view_height">200dp</dimen>
+
+    <!--250-->
+
+    <!-- CoordinatorLayout AppBarLayout -->
+    <dimen name="detail_backdrop_height">256dp</dimen>
+    <dimen name="card_margin">16dp</dimen>
 </resources>

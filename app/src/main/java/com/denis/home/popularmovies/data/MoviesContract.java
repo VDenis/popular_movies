@@ -43,6 +43,7 @@ public class MoviesContract {
         // Movie id as returned by API
         public static final String COLUMN_MOVIE_ID = "movie_id";
         public static final String COLUMN_POSTER = "poster";
+        public static final String COLUMN_BACKDROP = "backdrop";
         public static final String COLUMN_TITLE = "title";
         public static final String COLUMN_OVERVIEW = "overview";
         public static final String COLUMN_VOTE_AVERAGE = "vote_average";
@@ -64,24 +65,16 @@ public class MoviesContract {
     }
 
 
-/*    public static final class ReviewEntry implements BaseColumns {
-
-        public static final Uri CONTENT_URI =
-                BASE_CONTENT_URI.buildUpon().appendPath(PATH_REVIEW).build();
-
-        public static final String CONTENT_TYPE =
-                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_REVIEW;
-        public static final String CONTENT_ITEM_TYPE =
-                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_REVIEW;
+    public static final class ReviewEntry implements BaseColumns {
 
         public static final String TABLE_NAME = "review";
+
         // Column with the foreign key into the movie table.
         public static final String COLUMN_MOV_KEY = "movie_id";
         // In json "author": "Travis Bell"
         public static final String COLUMN_AUTHOR = "author";
         // In json  "content": "I felt like th ... over characters"
         public static final String COLUMN_CONTENT = "content";
-
         public static Uri buildMovieUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
@@ -90,27 +83,27 @@ public class MoviesContract {
             return CONTENT_URI.buildUpon()
                     .appendPath(Long.toString(movieId)).build();
         }
+
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(TABLE_NAME).build();
+
+        public static final String CONTENT_TYPE =
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + TABLE_NAME;
+        public static final String CONTENT_ITEM_TYPE =
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + TABLE_NAME;
     }
 
 
     public static final class VideoEntry implements BaseColumns {
 
-        public static final Uri CONTENT_URI =
-                BASE_CONTENT_URI.buildUpon().appendPath(PATH_VIDEO).build();
-
-        public static final String CONTENT_TYPE =
-                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_VIDEO;
-        public static final String CONTENT_ITEM_TYPE =
-                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_VIDEO;
-
         public static final String TABLE_NAME = "video";
+
         // Column with the foreign key into the movie table.
         public static final String COLUMN_MOV_KEY = "movie_id";
         // In json "key": "SUXWAEX2jlg"
         public static final String COLUMN_TRAILER = "video_key";
         // In json "name": "Trailer 1"
         public static final String COLUMN_NAME = "name";
-
         public static Uri buildMovieUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
@@ -119,17 +112,27 @@ public class MoviesContract {
             return CONTENT_URI.buildUpon()
                     .appendPath(Long.toString(movieId)).build();
         }
-        // In json "site": "YouTube"
+
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(TABLE_NAME).build();
+
+        public static final String CONTENT_TYPE =
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + TABLE_NAME;
+        public static final String CONTENT_ITEM_TYPE =
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + TABLE_NAME;
+
+        // public static final String COLUMN_SIZE = "size";
         // public static final String COLUMN_SITE = "site";
+        // In json "site": "YouTube"
+
 
         // In json "size": 720
-        // public static final String COLUMN_SIZE = "size";
 
         // In json "type": "Trailer"
         // public static final String COLUMN_TYPE = "type";
     }
 
-*//*
+/*
     public static final class ImageEntry implements BaseColumns {
 
         public static final String TABLE_NAME = "image";
