@@ -17,7 +17,7 @@ public class MovieItem implements Parcelable {
     double voteAverage;
     double popularity;
     String releaseDate;
-    Boolean isFavorite;
+
 
     public MovieItem(int id, String poster, String backdrop, String title, String overview, double voteAverage, double popularity, String releaseDate/*, Boolean isFavorite*/) {
         this.id = id;

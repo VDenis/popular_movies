@@ -22,7 +22,8 @@
     android:stretchMode="columnWidth"
     android:verticalSpacing="@dimen/grid_vertical_spacing"
     tools:context=".MainActivity"
-    />
+
+    android:fastScrollEnabled="false"/>
 
     <!--
     </FrameLayout>-->

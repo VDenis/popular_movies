@@ -70,11 +70,13 @@ public class MoviesContract {
         public static final String TABLE_NAME = "review";
 
         // Column with the foreign key into the movie table.
-        public static final String COLUMN_MOV_KEY = "movie_id";
+        //public static final String COLUMN_MOV_KEY = "movie_id";
+        public static final String COLUMN_MOV_KEY = MovieEntry.COLUMN_MOVIE_ID;
         // In json "author": "Travis Bell"
         public static final String COLUMN_AUTHOR = "author";
         // In json  "content": "I felt like th ... over characters"
         public static final String COLUMN_CONTENT = "content";
+
         public static Uri buildMovieUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
@@ -87,7 +89,7 @@ public class MoviesContract {
         public static final Uri CONTENT_URI =
                 BASE_CONTENT_URI.buildUpon().appendPath(TABLE_NAME).build();
 
-        public static final String CONTENT_TYPE =
+        public static final String CONTENT_DIR_TYPE =
                 ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + TABLE_NAME;
         public static final String CONTENT_ITEM_TYPE =
                 ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + TABLE_NAME;
@@ -104,6 +106,7 @@ public class MoviesContract {
         public static final String COLUMN_TRAILER = "video_key";
         // In json "name": "Trailer 1"
         public static final String COLUMN_NAME = "name";
+
         public static Uri buildMovieUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
@@ -116,7 +119,7 @@ public class MoviesContract {
         public static final Uri CONTENT_URI =
                 BASE_CONTENT_URI.buildUpon().appendPath(TABLE_NAME).build();
 
-        public static final String CONTENT_TYPE =
+        public static final String CONTENT_DIR_TYPE =
                 ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + TABLE_NAME;
         public static final String CONTENT_ITEM_TYPE =
                 ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + TABLE_NAME;

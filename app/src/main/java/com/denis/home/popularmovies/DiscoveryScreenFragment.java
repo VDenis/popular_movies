@@ -176,14 +176,14 @@ public class DiscoveryScreenFragment extends Fragment {
                 String tempPoster = movieJson.getString(TMDB_POSTER);
 
                 if (!tempPoster.contains("null")) {
-                    poster = Constants.MOVIES_BASE_URL + Constants.getImageQuality() + tempPoster;
+                    poster = Constants.MOVIES_BASE_URL + Constants.getNormalImageQuality() + tempPoster;
                 }
 
                 String backdrop = "";
                 String tempBackdrop = movieJson.getString(TMDB_BACKDROP);
 
                 if (!tempBackdrop.contains("null")) {
-                    backdrop = Constants.MOVIES_BASE_URL + Constants.getImageQuality() + tempBackdrop;
+                    backdrop = Constants.MOVIES_BASE_URL + Constants.getHighImageQuality() + tempBackdrop;
                 }
 
                 String title = movieJson.getString(TMDB_TITLE);
@@ -339,14 +339,14 @@ public class DiscoveryScreenFragment extends Fragment {
                         String tempPoster = mCursor.getString(COL_COLUMN_POSTER);
 
                         if (!tempPoster.contains("null")) {
-                            poster = Constants.MOVIES_BASE_URL + Constants.getImageQuality() + tempPoster;
+                            poster = Constants.MOVIES_BASE_URL + Constants.getNormalImageQuality() + tempPoster;
                         }
 
                         String backdrop = "";
                         String tempBackdrop = mCursor.getString(COL_COLUMN_BACKDROP);
 
                         if (!tempBackdrop.contains("null")) {
-                            backdrop = Constants.MOVIES_BASE_URL + Constants.getImageQuality() + tempBackdrop;
+                            backdrop = Constants.MOVIES_BASE_URL + Constants.getNormalImageQuality() + tempBackdrop;
                         }
 
                         String title = mCursor.getString(COL_COLUMN_TITLE);
@@ -370,14 +370,6 @@ public class DiscoveryScreenFragment extends Fragment {
         protected void onPostExecute(ArrayList<MovieItem> movies) {
             //super.onPostExecute(movies);
             Log.i(LOG_TAG, "onPostExecute");
-
-/*            if (movies != null) {
-                mMoviesAdapter.clear();
-                for (MovieItem movie : movies) {
-                    mMoviesAdapter.add(movie);
-                }
-                // New data is back from the server.  Hooray!
-            }*/
 
             mMoviesAdapter.clear();
 

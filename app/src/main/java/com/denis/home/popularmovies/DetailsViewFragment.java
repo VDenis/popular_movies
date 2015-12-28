@@ -8,6 +8,7 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -20,7 +21,20 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.denis.home.popularmovies.data.MoviesContract;
+import com.github.paolorotolo.expandableheightlistview.ExpandableHeightListView;
 import com.squareup.picasso.Picasso;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
 
 
 /**
@@ -36,6 +50,12 @@ public class DetailsViewFragment extends Fragment {
 
     MenuItem favoriteButton; // favorite button
 
+    private ReviewAdapter mReviewAdapter;
+    ArrayList<ReviewItem> reviews;
+
+    // For savedInstanceState
+    public static final String PARCELABLE_REVIEW_ITEM = "PARCELABLE_REVIEW_ITEM";
+
     public DetailsViewFragment() {
         // Required empty public constructor
     }
@@ -44,6 +64,17 @@ public class DetailsViewFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        if (savedInstanceState == null || !savedInstanceState.containsKey(PARCELABLE_REVIEW_ITEM)) {
+            reviews = new ArrayList<ReviewItem>();
+        } else {
+            reviews = savedInstanceState.getParcelableArrayList(PARCELABLE_REVIEW_ITEM);
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putParcelableArrayList(PARCELABLE_REVIEW_ITEM, reviews);
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -86,7 +117,18 @@ public class DetailsViewFragment extends Fragment {
         // The detail Activity called via intent.  Inspect the intent for movie data.
         Intent intent = getActivity().getIntent();
         if (intent != null && intent.hasExtra(DiscoveryScreenFragment.EXTRA_MOVIE_ITEM)) {
+
             movie = intent.getExtras().getParcelable(DiscoveryScreenFragment.EXTRA_MOVIE_ITEM);
+
+            ImageView backdrop_imageView = ((ImageView) rootView.findViewById(R.id.detail_backdrop_movie_image));
+            if (!movie.backdrop.isEmpty()) {
+                //Picasso.with(getActivity()).load(movie.backdrop).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).into(backdrop_imageView);
+                Picasso.with(getActivity()).load(movie.backdrop).into(backdrop_imageView);
+            } else {
+                //backdrop_imageView.setImageResource(R.mipmap.ic_launcher);
+            }
+            backdrop_imageView.requestFocus();
+
             ((TextView) rootView.findViewById(R.id.detail_movie_title))
                     .setText(movie.title);
 
@@ -102,13 +144,24 @@ public class DetailsViewFragment extends Fragment {
             ((TextView) rootView.findViewById(R.id.detail_movie_popularity))
                     .setText(String.format("%s: %.2f", getString(R.string.label_popularity), movie.popularity));
 
-            ImageView backdrop_imageView = ((ImageView) rootView.findViewById(R.id.detail_backdrop_movie_image));
-            Picasso.with(getActivity()).load(movie.backdrop).into(backdrop_imageView);
 
             ImageView poster_imageView = ((ImageView) rootView.findViewById(R.id.detail_poster_movie_image));
-            Picasso.with(getActivity()).load(movie.poster).into(poster_imageView);
+            if (!movie.poster.isEmpty()) {
+                //Picasso.with(getActivity()).load(movie.poster).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).into(poster_imageView);
+                Picasso.with(getActivity()).load(movie.poster).into(poster_imageView);
+            } else {
+                //poster_imageView.setImageResource(R.mipmap.ic_launcher);
+            }
 
+            FetchReviewTask popularMoviesTask = new FetchReviewTask();
+            popularMoviesTask.execute(String.valueOf(movie.id));
+            mReviewAdapter = new ReviewAdapter(getActivity(), reviews);
 
+            ExpandableHeightListView expandableListView = (ExpandableHeightListView ) rootView.findViewById(R.id.detail_movie_review_list);
+            expandableListView.setAdapter(mReviewAdapter);
+
+            // This actually does the magic
+            expandableListView.setExpanded(true);
         }
 
         // Inflate the layout for this fragment
@@ -121,7 +174,7 @@ public class DetailsViewFragment extends Fragment {
         Log.d(LOG_TAG, "setFavoriteStatus " + movie.title);
 
         // A "projection" defines the columns that will be returned for each row
-        String[] mProjection = { MoviesContract.MovieEntry.COLUMN_MOVIE_ID };
+        String[] mProjection = {MoviesContract.MovieEntry.COLUMN_MOVIE_ID};
 
         //String mSelection = MoviesContract.MovieEntry.COLUMN_MOVIE_ID + " LIKE ?";
         String mSelection = MoviesContract.MovieEntry.COLUMN_MOVIE_ID + " LIKE ?";
@@ -141,8 +194,7 @@ public class DetailsViewFragment extends Fragment {
             //if (cursor.moveToFirst()) {
             if (cursor.getCount() > 0) {
                 changeFavoriteStatus(true);
-            }
-            else {
+            } else {
                 changeFavoriteStatus(false);
             }
             Log.i(LOG_TAG, "favorite status: " + isFavorite);
@@ -213,6 +265,133 @@ public class DetailsViewFragment extends Fragment {
         protected void onInsertComplete(int token, Object cookie, Uri uri) {
             super.onInsertComplete(token, cookie, uri);
             changeFavoriteStatus(true);
+        }
+    }
+
+
+    // load reviews and trailers
+    public class FetchReviewTask extends AsyncTask<String, Void, ArrayList<ReviewItem>> {
+        private final String LOG_TAG = FetchReviewTask.class.getSimpleName();
+
+        private ArrayList<ReviewItem> getMovieReviewDataFromJson(String movieReviewJsonStr, int numPages)
+                throws JSONException {
+
+            Log.i(LOG_TAG, "getMovieReviewDataFromJson");
+
+            // These are the names of the JSON objects that need to be extracted.
+            final String TMDB_RESULTS_LIST = "results";
+            final String TMDB_AUTHOR = "author";
+            final String TMDB_CONTENT = "content";
+
+            JSONObject movieReviewJson = new JSONObject(movieReviewJsonStr);
+            JSONArray reviewArrayJson = movieReviewJson.getJSONArray(TMDB_RESULTS_LIST);
+
+            ArrayList<ReviewItem> reviewList = new ArrayList<>();
+
+            for (int i = 0; i < reviewArrayJson.length(); i++) {
+                JSONObject movieJson = reviewArrayJson.getJSONObject(i);
+
+                String author = movieJson.getString(TMDB_AUTHOR);
+                String content = movieJson.getString(TMDB_CONTENT);
+
+                reviewList.add(new ReviewItem(author, content));
+            }
+            return reviewList;
+        }
+
+        @Override
+        protected ArrayList<ReviewItem> doInBackground(String... params) {
+            if (params.length == 0) {
+                return null;
+            }
+
+            // read movie id
+            final String movie_id = params[0];
+
+            Log.i(LOG_TAG, "doInBackground");
+
+            HttpURLConnection urlConnection = null;
+            BufferedReader reader = null;
+            String movieReviewJsonStr = null;
+
+            try {
+                final String POPULAR_MOVIES_BASE_URL = "http://api.themoviedb.org/3/movie";
+
+                final String API_KEY_PARAM = "api_key";
+
+                Uri builtUri = Uri.parse(POPULAR_MOVIES_BASE_URL).buildUpon()
+                        .appendPath(movie_id)
+                        .appendPath("reviews")
+                        .appendQueryParameter(API_KEY_PARAM, BuildConfig.THE_MOVIE_DB_API_TOKEN)
+                        .build();
+
+                URL url = new URL(builtUri.toString());
+
+                Log.d(LOG_TAG, "Built URI " + builtUri.toString());
+
+                urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setRequestMethod("GET");
+                urlConnection.connect();
+
+                // Read the input stream into a String
+                InputStream inputStream = urlConnection.getInputStream();
+                StringBuffer buffer = new StringBuffer();
+                if (inputStream == null) {
+                    // Nothing to do.
+                    return null;
+                }
+                reader = new BufferedReader(new InputStreamReader(inputStream));
+
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
+                    // But it does make debugging a *lot* easier if you print out the completed
+                    // buffer for debugging.
+                    buffer.append(line + "\n");
+                }
+
+                if (buffer.length() == 0) {
+                    // Stream was empty.  No point in parsing.
+                    return null;
+                }
+                movieReviewJsonStr = buffer.toString();
+
+                Log.d(LOG_TAG, "Movie review string: " + movieReviewJsonStr);
+            } catch (IOException e) {
+                Log.e(LOG_TAG, "Error", e);
+                return null;
+            } finally {
+                if (urlConnection != null) {
+                    urlConnection.disconnect();
+                }
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (final IOException e) {
+                        Log.e(LOG_TAG, "Error closing stream", e);
+                    }
+                }
+            }
+
+            try {
+                return getMovieReviewDataFromJson(movieReviewJsonStr, 1);
+            } catch (JSONException e) {
+                Log.e(LOG_TAG, e.getMessage(), e);
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<ReviewItem> reviewItems) {
+            //super.onPostExecute(movies);
+            Log.i(LOG_TAG, "onPostExecute");
+
+            mReviewAdapter.clear();
+
+            if (reviewItems != null) {
+                mReviewAdapter.addAll(reviewItems);
+            }
         }
     }
 }
