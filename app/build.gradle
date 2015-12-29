@@ -38,4 +38,8 @@ dependencies {
 
     // debug database
     compile 'com.facebook.stetho:stetho:1.2.0'
+
+    // picasso cache
+    compile 'com.squareup.okhttp:okhttp:2.+'
+    compile 'com.squareup.okhttp:okhttp-urlconnection:2.+'
 }

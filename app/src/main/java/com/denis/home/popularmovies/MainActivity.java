@@ -9,6 +9,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.facebook.stetho.Stetho;
+import com.squareup.picasso.Picasso;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -25,6 +26,9 @@ public class MainActivity extends AppCompatActivity {
 
         // debug database
         Stetho.initializeWithDefaults(this);
+
+        // picasso debug, Picasso Indicatos show source (memory, disk or network)
+        Picasso.with(this).setIndicatorsEnabled(true);
 
         if (savedInstanceState == null) {
             getFragmentManager().beginTransaction()

@@ -13,7 +13,7 @@ public class Constants {
     }
 
     public static String getHighImageQuality() {
-        return IMAGE_QUALITY[5];
+        return IMAGE_QUALITY[4];
     }
 
 }

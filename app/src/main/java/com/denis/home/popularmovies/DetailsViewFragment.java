@@ -10,6 +10,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -48,10 +49,15 @@ public class DetailsViewFragment extends Fragment {
     private final String SCORE_FROM = "/10";
     private boolean isFavorite = false;
 
-    MenuItem favoriteButton; // favorite button
+    // favorite button
+    MenuItem favoriteButton;
 
+    // Review
     private ReviewAdapter mReviewAdapter;
     ArrayList<ReviewItem> reviews;
+
+    // Toolbar
+    String movieTitle;
 
     // For savedInstanceState
     public static final String PARCELABLE_REVIEW_ITEM = "PARCELABLE_REVIEW_ITEM";
@@ -112,7 +118,7 @@ public class DetailsViewFragment extends Fragment {
 
         // Inflate the layout for this fragment
         /*View rootView = inflater.inflate(R.layout.fragment_details_view, container, false);*/
-        View rootView = inflater.inflate(R.layout.new_fragment_details_view, container, false);
+        final View rootView = inflater.inflate(R.layout.new_fragment_details_view, container, false);
 
         // The detail Activity called via intent.  Inspect the intent for movie data.
         Intent intent = getActivity().getIntent();
@@ -120,17 +126,22 @@ public class DetailsViewFragment extends Fragment {
 
             movie = intent.getExtras().getParcelable(DiscoveryScreenFragment.EXTRA_MOVIE_ITEM);
 
-            ImageView backdrop_imageView = ((ImageView) rootView.findViewById(R.id.detail_backdrop_movie_image));
+            final ImageView backdrop_imageView = ((ImageView) rootView.findViewById(R.id.detail_backdrop_movie_image));
             if (!movie.backdrop.isEmpty()) {
                 //Picasso.with(getActivity()).load(movie.backdrop).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).into(backdrop_imageView);
                 Picasso.with(getActivity()).load(movie.backdrop).into(backdrop_imageView);
             } else {
                 //backdrop_imageView.setImageResource(R.mipmap.ic_launcher);
             }
+
+            // Request focus for image, otherwise list view get focus
             backdrop_imageView.requestFocus();
 
+            String movieTitle = movie.title;
+            ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(movieTitle);
+
             ((TextView) rootView.findViewById(R.id.detail_movie_title))
-                    .setText(movie.title);
+                    .setText(movieTitle);
 
             ((TextView) rootView.findViewById(R.id.detail_movie_overview))
                     .setText(movie.overview);
