@@ -25,7 +25,7 @@ public class TrailerAdapter extends ArrayAdapter<TrailerItem> {
 
         public ViewHolder(View view){
             imageView = (ImageView) view.findViewById(R.id.detail_trailer_image);
-            textView = (TextView) view.findViewById(R.id.discovery_movie_text);
+            textView = (TextView) view.findViewById(R.id.detail_trailer_text);
         }
     }
 

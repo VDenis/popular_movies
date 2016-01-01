@@ -18,6 +18,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -164,6 +165,14 @@ public class DetailFragment extends Fragment {
             mTrailerAdapter = new TrailerAdapter(getActivity(), mTrailerItems);
             GridView gridView = (GridView) rootView.findViewById(R.id.detail_movie_trailer_grid);
             gridView.setAdapter(mTrailerAdapter);
+            gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    Log.d(LOG_TAG, "Click in trailer");
+                    TrailerItem trailer = mTrailerAdapter.getItem(position);
+                    playMovieInYoutube(trailer.link);
+                }
+            });
 
             // Review
             mReviewAdapter = new ReviewAdapter(getActivity(), mReviewItems);
@@ -328,7 +337,7 @@ public class DetailFragment extends Fragment {
 
 
     // load mReviewItems and trailers
-    public class FetchReviewTask extends AsyncTask<String, Void, ArrayList<ReviewItem>> {
+    public class FetchReviewTask extends AsyncTask<String, Void, Wrapper> {
         private final String LOG_TAG = FetchReviewTask.class.getSimpleName();
 
         private ArrayList<ReviewItem> getMovieReviewDataFromJson(String movieReviewJsonStr, int numPages)
@@ -357,8 +366,40 @@ public class DetailFragment extends Fragment {
             return reviewList;
         }
 
+        private ArrayList<TrailerItem> getMovieTrailerDataFromJson(String movieTrailerJsonStr, int numPages)
+                throws JSONException {
+
+            Log.i(LOG_TAG, "getMovieTrailerDataFromJson");
+
+            // These are the names of the JSON objects that need to be extracted.
+            final String TMDB_RESULTS_LIST = "results";
+            final String TMDB_NAME = "name";
+            final String TMDB_KEY = "key";
+
+            final String TRAILER_BASE_URL = "https://www.youtube.com/watch?v=";
+            final String THUMBNAIL_URL_PREFIX = "http://img.youtube.com/vi/";
+            final String THUMBNAIL_URL_SUFFIX = "/0.jpg";
+
+            JSONObject movieTrailerJson = new JSONObject(movieTrailerJsonStr);
+            JSONArray trailerArrayJson = movieTrailerJson.getJSONArray(TMDB_RESULTS_LIST);
+
+            ArrayList<TrailerItem> trailerList = new ArrayList<>();
+
+            for (int i = 0; i < trailerArrayJson.length(); i++) {
+                JSONObject movieJson = trailerArrayJson.getJSONObject(i);
+
+                String name = movieJson.getString(TMDB_NAME);
+                String key = movieJson.getString(TMDB_KEY);
+
+                // thumbnail http://img.youtube.com/vi/SUXWAEX2jlg/0.jpg
+                // youtube video https://www.youtube.com/watch?v=SUXWAEX2jlg
+                trailerList.add(new TrailerItem(key, name, THUMBNAIL_URL_PREFIX + key + THUMBNAIL_URL_SUFFIX));
+            }
+            return trailerList;
+        }
+
         @Override
-        protected ArrayList<ReviewItem> doInBackground(String... params) {
+        protected Wrapper doInBackground(String... params) {
             if (params.length == 0) {
                 return null;
             }
@@ -370,93 +411,109 @@ public class DetailFragment extends Fragment {
 
             HttpURLConnection urlConnection = null;
             BufferedReader reader = null;
-            String movieReviewJsonStr = null;
+            String resultJsonStr = null;
+            Wrapper result = new Wrapper();
 
-            try {
-                final String POPULAR_MOVIES_BASE_URL = "http://api.themoviedb.org/3/movie";
+            // if i == 0 Reviews
+            // if i == 1 Trailers
+            for (int i = 0; i < 2; i++) {
+                try {
+                    final String POPULAR_MOVIES_BASE_URL = "http://api.themoviedb.org/3/movie";
+                    final String API_KEY_PARAM = "api_key";
+                    final String TARGET = i == 0 ? "reviews" : "videos";
 
-                final String API_KEY_PARAM = "api_key";
+                    Uri builtUri = Uri.parse(POPULAR_MOVIES_BASE_URL).buildUpon()
+                            .appendPath(movie_id)
+                            .appendPath(TARGET)
+                            .appendQueryParameter(API_KEY_PARAM, BuildConfig.THE_MOVIE_DB_API_TOKEN)
+                            .build();
 
-                Uri builtUri = Uri.parse(POPULAR_MOVIES_BASE_URL).buildUpon()
-                        .appendPath(movie_id)
-                        .appendPath("reviews")
-                        .appendQueryParameter(API_KEY_PARAM, BuildConfig.THE_MOVIE_DB_API_TOKEN)
-                        .build();
+                    URL url = new URL(builtUri.toString());
 
-                URL url = new URL(builtUri.toString());
+                    Log.d(LOG_TAG, "Built URI " + builtUri.toString());
 
-                Log.d(LOG_TAG, "Built URI " + builtUri.toString());
+                    urlConnection = (HttpURLConnection) url.openConnection();
+                    urlConnection.setRequestMethod("GET");
+                    urlConnection.connect();
 
-                urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("GET");
-                urlConnection.connect();
+                    // Read the input stream into a String
+                    InputStream inputStream = urlConnection.getInputStream();
+                    StringBuffer buffer = new StringBuffer();
+                    if (inputStream == null) {
+                        // Nothing to do.
+                        return null;
+                    }
+                    reader = new BufferedReader(new InputStreamReader(inputStream));
 
-                // Read the input stream into a String
-                InputStream inputStream = urlConnection.getInputStream();
-                StringBuffer buffer = new StringBuffer();
-                if (inputStream == null) {
-                    // Nothing to do.
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
+                        // But it does make debugging a *lot* easier if you print out the completed
+                        // buffer for debugging.
+                        buffer.append(line + "\n");
+                    }
+
+                    if (buffer.length() == 0) {
+                        // Stream was empty.  No point in parsing.
+                        return null;
+                    }
+                    resultJsonStr = buffer.toString();
+
+                    Log.d(LOG_TAG, "Movie review string: " + resultJsonStr);
+                } catch (IOException e) {
+                    Log.e(LOG_TAG, "Error", e);
                     return null;
-                }
-                reader = new BufferedReader(new InputStreamReader(inputStream));
-
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-                    // But it does make debugging a *lot* easier if you print out the completed
-                    // buffer for debugging.
-                    buffer.append(line + "\n");
-                }
-
-                if (buffer.length() == 0) {
-                    // Stream was empty.  No point in parsing.
-                    return null;
-                }
-                movieReviewJsonStr = buffer.toString();
-
-                Log.d(LOG_TAG, "Movie review string: " + movieReviewJsonStr);
-            } catch (IOException e) {
-                Log.e(LOG_TAG, "Error", e);
-                return null;
-            } finally {
-                if (urlConnection != null) {
-                    urlConnection.disconnect();
-                }
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (final IOException e) {
-                        Log.e(LOG_TAG, "Error closing stream", e);
+                } finally {
+                    if (urlConnection != null) {
+                        urlConnection.disconnect();
+                    }
+                    if (reader != null) {
+                        try {
+                            reader.close();
+                        } catch (final IOException e) {
+                            Log.e(LOG_TAG, "Error closing stream", e);
+                        }
                     }
                 }
-            }
 
-            try {
-                return getMovieReviewDataFromJson(movieReviewJsonStr, 1);
-            } catch (JSONException e) {
-                Log.e(LOG_TAG, e.getMessage(), e);
-                e.printStackTrace();
+                try {
+                    if (i == 0) {
+                        result.reviewItems = getMovieReviewDataFromJson(resultJsonStr, 1);
+                    } else if (i == 1) {
+                        result.trailerItems = getMovieTrailerDataFromJson(resultJsonStr, 1);
+                        return result;
+                    }
+                } catch (JSONException e) {
+                    Log.e(LOG_TAG, e.getMessage(), e);
+                    e.printStackTrace();
+                }
             }
             return null;
         }
 
         @Override
-        protected void onPostExecute(ArrayList<ReviewItem> reviewItems) {
+        protected void onPostExecute(Wrapper result) {
             //super.onPostExecute(mMovieItems);
             Log.i(LOG_TAG, "onPostExecute");
+            ArrayList<ReviewItem> reviewItems = result.reviewItems;
+            ArrayList<TrailerItem> trailerItems = result.trailerItems;
 
             mReviewAdapter.clear();
+            mTrailerAdapter.clear();
 
             if (reviewItems != null) {
                 mReviewAdapter.addAll(reviewItems);
+            }
+
+            if (trailerItems != null) {
+                mTrailerAdapter.addAll(trailerItems);
             }
         }
     }
 
 
     // Pair Trailer and Review
-    public class Wrapper
-    {
+    public class Wrapper {
         public ArrayList<TrailerItem> trailerItems;
         public ArrayList<ReviewItem> reviewItems;
     }
@@ -464,15 +521,30 @@ public class DetailFragment extends Fragment {
 
     // launch youtube application via intent
     void playMovieInYoutube(String youtubeLinkId) {
-        try {
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube://" + youtubeLinkId));
+/*            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube://" + youtubeLinkId));
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
+            startActivity(intent);*/
+            Intent intent1 = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + youtubeLinkId));
+            //intent1.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            if (intent1.resolveActivity(getActivity().getPackageManager()) != null) {
+                startActivity(intent1);
+            } else {
+                Log.d(LOG_TAG, "Couldn't call " + youtubeLinkId + ", no receiving apps installed!");
+                Intent intent2 = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.youtube.com/watch?v=" + youtubeLinkId));
+                //intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent2);
+            }
+    }
 
-        } catch (ActivityNotFoundException e) {
-            // youtube is not installed.Will be opened in other available apps
-//            Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(content));
-//            startActivity(i);
+    // another method
+    public void watchYoutubeVideo(String id){
+        try{
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + id));
+            startActivity(intent);
+        }catch (ActivityNotFoundException ex){
+            Intent intent=new Intent(Intent.ACTION_VIEW,
+                    Uri.parse("http://www.youtube.com/watch?v="+id));
+            startActivity(intent);
         }
     }
 }
