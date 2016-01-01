@@ -1,7 +1,6 @@
 package com.denis.home.popularmovies;
 
 import android.app.Activity;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,10 +13,10 @@ import com.squareup.picasso.Picasso;
 import java.util.List;
 
 /**
- * Created by Denis on 30.10.2015.
+ * Created by Denis on 01.01.2016.
  */
-public class MovieAdapter extends ArrayAdapter<MovieItem> {
-    private final String LOG_TAG = MovieAdapter.class.getSimpleName();
+public class TrailerAdapter extends ArrayAdapter<TrailerItem> {
+    private final String LOG_TAG = TrailerAdapter.class.getSimpleName();
 
     // View lookup cache
     private static class ViewHolder {
@@ -25,13 +24,13 @@ public class MovieAdapter extends ArrayAdapter<MovieItem> {
         public final TextView textView;
 
         public ViewHolder(View view) {
-            imageView = (ImageView) view.findViewById(R.id.discovery_movie_image);
-            textView = (TextView) view.findViewById(R.id.discovery_movie_text);
+            imageView = (ImageView) view.findViewById(R.id.detail_trailer_image);
+            textView = (TextView) view.findViewById(R.id.detail_trailer_text);
         }
     }
 
-    public MovieAdapter(Activity context, List<MovieItem> androidMovies) {
-        super(context, 0, androidMovies);
+    public TrailerAdapter(Activity context, List<TrailerItem> trailerItems) {
+        super(context, 0, trailerItems);
     }
 
     @Override
@@ -39,27 +38,26 @@ public class MovieAdapter extends ArrayAdapter<MovieItem> {
         ViewHolder viewHolder;
         if (convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(
-                    R.layout.movie_item, parent, false);
+                    R.layout.trailer_item, parent, false);
             viewHolder = new ViewHolder(convertView);
             convertView.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
         }
 
-        MovieItem androidMovie = getItem(position);
+        TrailerItem trailerItem = getItem(position);
 
-        // Movie have poster
-        if (!androidMovie.poster.isEmpty()) {
+        // Trailer
+        if (!trailerItem.thumbnail.isEmpty()) {
             // Set image 1
-            Picasso.with(getContext()).load(androidMovie.poster).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).into(viewHolder.imageView);
+            Picasso.with(getContext()).load(trailerItem.thumbnail).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).into(viewHolder.imageView);
         } else {
             // Set image 2
             viewHolder.imageView.setImageResource(R.mipmap.ic_launcher);
         }
 
         // Set text
-        viewHolder.textView.setText(androidMovie.title);
-        Log.d(LOG_TAG, position + " - " + convertView + " - " + androidMovie.title);
+        viewHolder.textView.setText(trailerItem.name);
 
         return convertView;
     }
