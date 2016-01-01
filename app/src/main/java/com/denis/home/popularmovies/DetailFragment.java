@@ -223,9 +223,11 @@ public class DetailFragment extends Fragment {
         super.onStart();
         if (mMovie != null) {
             FetchReviewTask popularMoviesTask = new FetchReviewTask();
-            popularMoviesTask.execute(String.valueOf(mMovie.id));
-
-
+            if (Utility.isNetworkAvailable(getActivity())) {
+                popularMoviesTask.execute(String.valueOf(mMovie.id));
+            } else {
+                // no internet connection
+            }
         }
     }
 
@@ -524,26 +526,26 @@ public class DetailFragment extends Fragment {
 /*            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube://" + youtubeLinkId));
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);*/
-            Intent intent1 = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + youtubeLinkId));
-            //intent1.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            if (intent1.resolveActivity(getActivity().getPackageManager()) != null) {
-                startActivity(intent1);
-            } else {
-                Log.d(LOG_TAG, "Couldn't call " + youtubeLinkId + ", no receiving apps installed!");
-                Intent intent2 = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.youtube.com/watch?v=" + youtubeLinkId));
-                //intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent2);
-            }
+        Intent intent1 = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + youtubeLinkId));
+        //intent1.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        if (intent1.resolveActivity(getActivity().getPackageManager()) != null) {
+            startActivity(intent1);
+        } else {
+            Log.d(LOG_TAG, "Couldn't call " + youtubeLinkId + ", no receiving apps installed!");
+            Intent intent2 = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.youtube.com/watch?v=" + youtubeLinkId));
+            //intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent2);
+        }
     }
 
     // another method
-    public void watchYoutubeVideo(String id){
-        try{
+    public void watchYoutubeVideo(String id) {
+        try {
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + id));
             startActivity(intent);
-        }catch (ActivityNotFoundException ex){
-            Intent intent=new Intent(Intent.ACTION_VIEW,
-                    Uri.parse("http://www.youtube.com/watch?v="+id));
+        } catch (ActivityNotFoundException ex) {
+            Intent intent = new Intent(Intent.ACTION_VIEW,
+                    Uri.parse("http://www.youtube.com/watch?v=" + id));
             startActivity(intent);
         }
     }
