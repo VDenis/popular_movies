@@ -19,7 +19,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -163,8 +162,9 @@ public class DetailFragment extends Fragment {
 
             // Trailer
             mTrailerAdapter = new TrailerAdapter(getActivity(), mTrailerItems);
-            GridView gridView = (GridView) rootView.findViewById(R.id.detail_movie_trailer_grid);
+            ExpandableHeightGridView gridView = (ExpandableHeightGridView) rootView.findViewById(R.id.detail_movie_trailer_grid);
             gridView.setAdapter(mTrailerAdapter);
+            gridView.setExpanded(true);
             gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -497,8 +497,8 @@ public class DetailFragment extends Fragment {
         protected void onPostExecute(Wrapper result) {
             //super.onPostExecute(mMovieItems);
             Log.i(LOG_TAG, "onPostExecute");
-            ArrayList<ReviewItem> reviewItems = result.reviewItems;
-            ArrayList<TrailerItem> trailerItems = result.trailerItems;
+            ArrayList<ReviewItem> reviewItems = result.reviewItems != null ? result.reviewItems : null;
+            ArrayList<TrailerItem> trailerItems = result.trailerItems  != null ? result.trailerItems : null;
 
             mReviewAdapter.clear();
             mTrailerAdapter.clear();

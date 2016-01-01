@@ -167,9 +167,9 @@ public class DiscoveryFragment extends Fragment {
         Log.i(LOG_TAG, "onStart!");
 
         // TODO or use movie adapter
-        if (mMovieItems.isEmpty()) {
+        //if (mMovieItems.isEmpty()) {
             updatePopularMovies();
-        }
+        //}
     }
 
 
