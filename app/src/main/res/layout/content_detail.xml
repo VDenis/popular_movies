@@ -7,7 +7,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:showIn="@layout/activity_details_view"
-    tools:context="com.denis.home.popularmovies.DetailsViewActivity">
+    tools:showIn="@layout/activity_detail"
+    tools:context=".DetailActivity"
+    tools:layout="@layout/new_fragment_detail">
 
 </FrameLayout>

@@ -11,9 +11,13 @@ import android.view.MenuItem;
 import com.facebook.stetho.Stetho;
 import com.squareup.picasso.Picasso;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements DiscoveryFragment.Callback {
 
-    private final String LOG_TAG= MainActivity.class.getSimpleName();
+    private final String LOG_TAG = MainActivity.class.getSimpleName();
+
+    // for tablet mode
+    private static final String DETAILFRAGMENT_TAG = "DFTAG";
+    private boolean mTwoPane;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,10 +34,22 @@ public class MainActivity extends AppCompatActivity {
         // picasso debug, Picasso Indicatos show source (memory, disk or network)
         Picasso.with(this).setIndicatorsEnabled(true);
 
-        if (savedInstanceState == null) {
+/*        if (savedInstanceState == null) {
             getFragmentManager().beginTransaction()
-                    .add(R.id.activity_main_container, new DiscoveryScreenFragment())
+                    .add(R.id.activity_main_container, new DiscoveryFragment())
                     .commit();
+        }*/
+
+        if (findViewById(R.id.details_view_container) != null) {
+            mTwoPane = true;
+            if (savedInstanceState == null) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.details_view_container, new DetailFragment(), DETAILFRAGMENT_TAG)
+                        .commit();
+            }
+        }
+        else {
+            mTwoPane = false;
         }
 
 /*        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -91,5 +107,29 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    public void onItemSelected(MovieItem movie) {
+        Log.i(LOG_TAG, "onItemSelected, mTwoPane " + (mTwoPane ? "Tablet" : "Phone"));        // Cache backdrop for detail page
+
+        if (mTwoPane) {
+            Bundle args = new Bundle();
+            args.putParcelable(DiscoveryFragment.EXTRA_MOVIE_ITEM, movie);
+            DetailFragment fragment = new DetailFragment();
+            fragment.setArguments(args);
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.details_view_container, fragment, DETAILFRAGMENT_TAG)
+                    .commit();
+        }
+        else {
+            Intent intent = new Intent(this, DetailActivity.class).putExtra(DiscoveryFragment.EXTRA_MOVIE_ITEM, movie);
+            startActivity(intent);
+        }
     }
 }

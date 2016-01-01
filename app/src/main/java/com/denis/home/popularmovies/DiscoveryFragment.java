@@ -2,7 +2,6 @@ package com.denis.home.popularmovies;
 
 
 import android.app.Fragment;
-import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -13,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.ListView;
 
 import com.denis.home.popularmovies.data.MoviesContract;
 
@@ -32,9 +32,9 @@ import java.util.ArrayList;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class DiscoveryScreenFragment extends Fragment {
+public class DiscoveryFragment extends Fragment {
 
-    private final String LOG_TAG = DiscoveryScreenFragment.class.getSimpleName();
+    private final String LOG_TAG = DiscoveryFragment.class.getSimpleName();
 
     // For savedInstanceState
     public static final String PARCELABLE_MOVIE_ITEM = "PARCELABLE_MOVIE_ITEM";
@@ -68,26 +68,42 @@ public class DiscoveryScreenFragment extends Fragment {
     static final int COL_COLUMN_RELEASE_DATE = 7;
 
 
+    // Grid
     private MovieAdapter mMoviesAdapter;
-    ArrayList<MovieItem> movies;
+    private ArrayList<MovieItem> mMovieItems;
+    private GridView mGridView;
+    private int mPosition = GridView.INVALID_POSITION;
+    private static final String SELECTED_KEY = "selected_position";
 
-    public DiscoveryScreenFragment() {
+    // callback interface. activity must implement
+    public interface Callback {
+        public void onItemSelected(MovieItem movie);
+    }
+
+    public DiscoveryFragment() {
         // Required empty public constructor
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (savedInstanceState == null || !savedInstanceState.containsKey(PARCELABLE_MOVIE_ITEM)) {
-            movies = new ArrayList<MovieItem>();
+        Log.i(LOG_TAG, "onCreate");
+        if (savedInstanceState != null && savedInstanceState.containsKey(PARCELABLE_MOVIE_ITEM)) {
+            mMovieItems = savedInstanceState.getParcelableArrayList(PARCELABLE_MOVIE_ITEM);
         } else {
-            movies = savedInstanceState.getParcelableArrayList(PARCELABLE_MOVIE_ITEM);
+            mMovieItems = new ArrayList<MovieItem>();
         }
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        outState.putParcelableArrayList(PARCELABLE_MOVIE_ITEM, movies);
+        Log.i(LOG_TAG, "onSaveInstanceState");
+        if (mMovieItems != null && mMovieItems.isEmpty()) {
+            outState.putParcelableArrayList(PARCELABLE_MOVIE_ITEM, mMovieItems);
+        }
+        if (mPosition != ListView.INVALID_POSITION) {
+            outState.putInt(SELECTED_KEY, mPosition);
+        }
         super.onSaveInstanceState(outState);
     }
 
@@ -98,29 +114,37 @@ public class DiscoveryScreenFragment extends Fragment {
         Log.i(LOG_TAG, "onCreateView!");
 
         // Inflate the layout for this fragment
-        View rootView = inflater.inflate(R.layout.fragment_discovery_screen, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_discovery, container, false);
 
-        mMoviesAdapter = new MovieAdapter(getActivity(), movies);
+        mMoviesAdapter = new MovieAdapter(getActivity(), mMovieItems);
 
-        GridView gridView = (GridView) rootView.findViewById(R.id.movies_grid);
-        gridView.setAdapter(mMoviesAdapter);
+        mGridView = (GridView) rootView.findViewById(R.id.movies_grid);
+        mGridView.setAdapter(mMoviesAdapter);
 
-        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
                 Log.d(LOG_TAG, "Click in movie");
-
-                Intent intent = new Intent(getActivity(), DetailsViewActivity.class).putExtra(EXTRA_MOVIE_ITEM, mMoviesAdapter.getItem(position));
-                startActivity(intent);
+                ((Callback) getActivity()).onItemSelected(mMoviesAdapter.getItem(position));
+                mPosition = position;
+/*                Intent intent = new Intent(getActivity(), DetailActivity.class).putExtra(EXTRA_MOVIE_ITEM, mMoviesAdapter.getItem(position));
+                startActivity(intent);*/
             }
         });
+
+        if (savedInstanceState != null && savedInstanceState.containsKey(SELECTED_KEY)) {
+            // The listview probably hasn't even been populated yet.  Actually perform the
+            // swapout in onLoadFinished.
+            mPosition = savedInstanceState.getInt(SELECTED_KEY);
+        }
 
         return rootView;
     }
 
 
     private void updatePopularMovies() {
+        Log.i(LOG_TAG, "updatePopularMovies");
         FetchMoviesTask popularMoviesTask = new FetchMoviesTask();
 
         if (Utility.getPreferredSortOrder(getActivity()).equals(getString(R.string.pref_sort_by_favorites))) {
@@ -141,7 +165,11 @@ public class DiscoveryScreenFragment extends Fragment {
     public void onStart() {
         super.onStart();
         Log.i(LOG_TAG, "onStart!");
-        updatePopularMovies();
+
+        // TODO or use movie adapter
+        if (mMovieItems.isEmpty()) {
+            updatePopularMovies();
+        }
     }
 
 
@@ -368,7 +396,7 @@ public class DiscoveryScreenFragment extends Fragment {
 
         @Override
         protected void onPostExecute(ArrayList<MovieItem> movies) {
-            //super.onPostExecute(movies);
+            //super.onPostExecute(mMovieItems);
             Log.i(LOG_TAG, "onPostExecute");
 
             mMoviesAdapter.clear();
@@ -376,6 +404,17 @@ public class DiscoveryScreenFragment extends Fragment {
             if (movies != null) {
                 mMoviesAdapter.addAll(movies);
             }
+
+            // scroll to selected position or to first position
+            if (mPosition != GridView.INVALID_POSITION && mPosition >= GridView.SCROLLBAR_POSITION_DEFAULT && mPosition < mMoviesAdapter.getCount()) {
+                mGridView.smoothScrollToPosition(mPosition);
+            }
+            // open first movie grid in detail page
+/*            else if (!mMoviesAdapter.isEmpty()) {
+                final int position = GridView.SCROLLBAR_POSITION_DEFAULT;
+                mGridView.smoothScrollToPosition(position);
+                ((Callback) getActivity()).onItemSelected(mMoviesAdapter.getItem(position));
+            }*/
         }
     }
 }
