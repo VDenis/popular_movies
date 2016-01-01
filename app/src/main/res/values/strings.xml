@@ -19,11 +19,17 @@
     <string name="pref_label_most_popular">Most popular</string>
     <!-- Label for highest rated option in sort by preference [CHAR LIMIT=25] -->
     <string name="pref_label_highest_rated">Highest rated</string>
+    <string name="pref_label_favorites">Favorites</string>
     <!-- Key name for sort preference in SharedPreferences [CHAR LIMIT=NONE] -->
     <string name="pref_sort_by_key" translatable="false">sort_by</string>
     <!-- Value in SharedPreferences for most_popular sort option [CHAR LIMIT=NONE] -->
     <string name="pref_sort_by_most_popular" translatable="false">most_popular</string>
     <!-- Value in SharedPreferences for highest rated sort option [CHAR LIMIT=NONE] -->
     <string name="pref_sort_by_highest_rated" translatable="false">highest_rated</string>
+    <string name="pref_sort_by_favorites" translatable="false">favorites</string>
+
+    // Favorite button
+    <string name="action_favorite">Add to favorite</string>
+    <string name="action_share">Share the Movie</string>
 
 </resources>
