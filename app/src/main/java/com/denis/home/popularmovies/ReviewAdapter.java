@@ -21,7 +21,7 @@ public class ReviewAdapter extends ArrayAdapter<ReviewItem> {
         public final TextView reviewAuthor;
         public final TextView reviewContent;
 
-        public ViewHolder(View view){
+        public ViewHolder(View view) {
             reviewAuthor = (TextView) view.findViewById(R.id.details_review_author);
             reviewContent = (TextView) view.findViewById(R.id.details_review_content);
         }
@@ -39,8 +39,7 @@ public class ReviewAdapter extends ArrayAdapter<ReviewItem> {
                     R.layout.review_item, parent, false);
             viewHolder = new ViewHolder(convertView);
             convertView.setTag(viewHolder);
-        }
-        else {
+        } else {
             viewHolder = (ViewHolder) convertView.getTag();
         }
 

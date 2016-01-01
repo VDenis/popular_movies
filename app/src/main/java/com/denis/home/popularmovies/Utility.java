@@ -19,9 +19,9 @@ public class Utility {
     }
 
     // Check internet connection. true if internet exist, another false
-    public static boolean isNetworkAvailable(Context context){
-        ConnectivityManager cm=(ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo net=cm.getActiveNetworkInfo();
-        return net!=null && net.isConnected();
+    public static boolean isNetworkAvailable(Context context) {
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo net = cm.getActiveNetworkInfo();
+        return net != null && net.isConnected();
     }
 }

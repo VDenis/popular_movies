@@ -498,7 +498,7 @@ public class DetailFragment extends Fragment {
             //super.onPostExecute(mMovieItems);
             Log.i(LOG_TAG, "onPostExecute");
             ArrayList<ReviewItem> reviewItems = result.reviewItems != null ? result.reviewItems : null;
-            ArrayList<TrailerItem> trailerItems = result.trailerItems  != null ? result.trailerItems : null;
+            ArrayList<TrailerItem> trailerItems = result.trailerItems != null ? result.trailerItems : null;
 
             mReviewAdapter.clear();
             mTrailerAdapter.clear();

@@ -5,7 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-import static com.denis.home.popularmovies.data.MoviesContract.*;
+import static com.denis.home.popularmovies.data.MoviesContract.MovieEntry;
 
 /**
  * Created by Denis on 17.12.2015.

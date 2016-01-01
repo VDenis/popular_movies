@@ -24,7 +24,7 @@ public class MovieAdapter extends ArrayAdapter<MovieItem> {
         public final ImageView imageView;
         public final TextView textView;
 
-        public ViewHolder(View view){
+        public ViewHolder(View view) {
             imageView = (ImageView) view.findViewById(R.id.discovery_movie_image);
             textView = (TextView) view.findViewById(R.id.discovery_movie_text);
         }
@@ -42,8 +42,7 @@ public class MovieAdapter extends ArrayAdapter<MovieItem> {
                     R.layout.movie_item, parent, false);
             viewHolder = new ViewHolder(convertView);
             convertView.setTag(viewHolder);
-        }
-        else {
+        } else {
             viewHolder = (ViewHolder) convertView.getTag();
         }
 
@@ -53,8 +52,7 @@ public class MovieAdapter extends ArrayAdapter<MovieItem> {
         if (!androidMovie.poster.isEmpty()) {
             // Set image 1
             Picasso.with(getContext()).load(androidMovie.poster).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).into(viewHolder.imageView);
-        }
-        else {
+        } else {
             // Set image 2
             viewHolder.imageView.setImageResource(R.mipmap.ic_launcher);
         }

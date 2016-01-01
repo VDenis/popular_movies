@@ -16,7 +16,7 @@ import com.squareup.picasso.Picasso;
 /**
  * Created by Denis on 23.12.2015.
  */
-public class NewMovieAdapter extends CursorAdapter{
+public class NewMovieAdapter extends CursorAdapter {
     private static final String LOG_TAG = NewMovieAdapter.class.getSimpleName();
     private Context mContext;
     private static int sLoaderID;
@@ -25,13 +25,13 @@ public class NewMovieAdapter extends CursorAdapter{
         public final ImageView imageView;
         public final TextView textView;
 
-        public ViewHolder(View view){
+        public ViewHolder(View view) {
             imageView = (ImageView) view.findViewById(R.id.discovery_movie_image);
             textView = (TextView) view.findViewById(R.id.discovery_movie_text);
         }
     }
 
-    public NewMovieAdapter(Context context, Cursor c, int flags, int loaderID){
+    public NewMovieAdapter(Context context, Cursor c, int flags, int loaderID) {
         super(context, c, flags);
         Log.d(LOG_TAG, "MovAdapter");
         mContext = context;

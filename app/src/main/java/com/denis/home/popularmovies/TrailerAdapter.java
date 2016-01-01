@@ -23,7 +23,7 @@ public class TrailerAdapter extends ArrayAdapter<TrailerItem> {
         public final ImageView imageView;
         public final TextView textView;
 
-        public ViewHolder(View view){
+        public ViewHolder(View view) {
             imageView = (ImageView) view.findViewById(R.id.detail_trailer_image);
             textView = (TextView) view.findViewById(R.id.detail_trailer_text);
         }
@@ -41,8 +41,7 @@ public class TrailerAdapter extends ArrayAdapter<TrailerItem> {
                     R.layout.trailer_item, parent, false);
             viewHolder = new ViewHolder(convertView);
             convertView.setTag(viewHolder);
-        }
-        else {
+        } else {
             viewHolder = (ViewHolder) convertView.getTag();
         }
 
@@ -52,8 +51,7 @@ public class TrailerAdapter extends ArrayAdapter<TrailerItem> {
         if (!trailerItem.thumbnail.isEmpty()) {
             // Set image 1
             Picasso.with(getContext()).load(trailerItem.thumbnail).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).into(viewHolder.imageView);
-        }
-        else {
+        } else {
             // Set image 2
             viewHolder.imageView.setImageResource(R.mipmap.ic_launcher);
         }

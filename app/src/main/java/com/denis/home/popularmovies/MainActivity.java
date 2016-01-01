@@ -47,8 +47,7 @@ public class MainActivity extends AppCompatActivity implements DiscoveryFragment
                         .replace(R.id.details_view_container, new DetailFragment(), DETAILFRAGMENT_TAG)
                         .commit();
             }
-        }
-        else {
+        } else {
             mTwoPane = false;
         }
 
@@ -126,8 +125,7 @@ public class MainActivity extends AppCompatActivity implements DiscoveryFragment
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.details_view_container, fragment, DETAILFRAGMENT_TAG)
                     .commit();
-        }
-        else {
+        } else {
             Intent intent = new Intent(this, DetailActivity.class).putExtra(DiscoveryFragment.EXTRA_MOVIE_ITEM, movie);
             startActivity(intent);
         }

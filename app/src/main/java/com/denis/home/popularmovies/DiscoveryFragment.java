@@ -149,8 +149,7 @@ public class DiscoveryFragment extends Fragment {
 
         if (Utility.getPreferredSortOrder(getActivity()).equals(getString(R.string.pref_sort_by_favorites))) {
             popularMoviesTask.execute(LOAD_FAVORITES);
-        }
-        else {
+        } else {
             // Load from internet
             if (Utility.isNetworkAvailable(getActivity())) {
                 popularMoviesTask.execute(LOAD_NOT_FAVORITES);
@@ -168,7 +167,7 @@ public class DiscoveryFragment extends Fragment {
 
         // TODO or use movie adapter
         //if (mMovieItems.isEmpty()) {
-            updatePopularMovies();
+        updatePopularMovies();
         //}
     }
 
@@ -344,7 +343,7 @@ public class DiscoveryFragment extends Fragment {
                  * call android.util.Log.e() to log this error.
                  *
                  */
-                // If the Cursor is empty, the provider found no matches
+                    // If the Cursor is empty, the provider found no matches
                 } else if (mCursor.getCount() < 1) {
 
                 /*
