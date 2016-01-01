@@ -6,6 +6,6 @@
         android:key="@string/pref_sort_by_key"
         android:defaultValue="@string/pref_sort_by_most_popular"
         android:entryValues="@array/pref_sort_by_values"
-        android:entries="@array/pref_sort_by_options" />
+        android:entries="@array/pref_sort_by_options"/>
 
 </PreferenceScreen>

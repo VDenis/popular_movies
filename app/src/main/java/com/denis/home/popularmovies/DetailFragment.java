@@ -549,7 +549,7 @@ public class DetailFragment extends Fragment {
             // update share intent
             // We still need this for the share intent
             //mMovie.title + ", " + mTrailerItems.get(0).name + ", TRAILER_BASE_URL" + mTrailerItems.get(0).link
-            if (mMovie != null && !mTrailerItems.isEmpty()){
+            if (mMovie != null && !mTrailerItems.isEmpty()) {
                 mShareTrailer = String.format("%s - %s, %s", mMovie.title, mTrailerItems.get(0).name, TRAILER_BASE_URL + mTrailerItems.get(0).link);
 
                 // If onCreateOptionsMenu has already happened, we need to update the share intent now.

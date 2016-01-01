@@ -15,8 +15,8 @@
         android:layout_gravity="center">
     </ImageView>
 
-<!--    android:layout_width="@dimen/grid_item_movie_image_view_height"
-    android:layout_height="@dimen/grid_item_movie_image_view_height"-->
+    <!--    android:layout_width="@dimen/grid_item_movie_image_view_height"
+        android:layout_height="@dimen/grid_item_movie_image_view_height"-->
 
     <TextView
         android:id="@+id/discovery_movie_text"
