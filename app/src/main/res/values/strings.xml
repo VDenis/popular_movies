@@ -30,5 +30,6 @@
 
     // Favorite button
     <string name="action_favorite">Add to favorite</string>
+    <string name="action_share">Share the Movie</string>
 
 </resources>

@@ -10,7 +10,9 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.ShareActionProvider;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -60,6 +62,7 @@ public class DetailFragment extends Fragment {
     // Trailer
     private TrailerAdapter mTrailerAdapter;
     ArrayList<TrailerItem> mTrailerItems;
+    final String TRAILER_BASE_URL = "https://www.youtube.com/watch?v=";
 
     // find view by id
     private ImageView mBackdropImageView;
@@ -73,6 +76,11 @@ public class DetailFragment extends Fragment {
     // For savedInstanceState
     public static final String PARCELABLE_REVIEW_ITEM = "PARCELABLE_REVIEW_ITEM";
     public static final String PARCELABLE_TRAILER_ITEM = "PARCELABLE_TRAILER_ITEM";
+
+    // Share
+    private static final String APP_SHARE_HASHTAG = " #PopularMovies";
+    private String mShareTrailer;
+    private ShareActionProvider mShareActionProvider;
 
     public DetailFragment() {
         // Required empty public constructor
@@ -111,6 +119,31 @@ public class DetailFragment extends Fragment {
         favoriteButton = menu.findItem(R.id.action_favorite);
         // Set favorite for current mMovie
         setFavoriteStatus();
+
+        // Retrieve the share menu item
+        MenuItem menuItem = menu.findItem(R.id.action_share);
+
+        // Get the provider and hold onto it to set/change the share intent.
+        mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
+
+        // If onLoadFinished happens before this, we can go ahead and set the share intent now.
+        if (mShareTrailer != null) {
+            mShareActionProvider.setShareIntent(createShareMovieIntent());
+        }
+    }
+
+    // Share
+    private Intent createShareMovieIntent() {
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+        shareIntent.setType("text/plain");
+
+        //if (mMovie != null && !mTrailerItems.isEmpty() ) {
+/*            shareIntent.putExtra(Intent.EXTRA_TEXT, mMovie.title + ", " + mTrailerItems.get(0).name
+                    + ", TRAILER_BASE_URL" + mTrailerItems.get(0).link);    */
+        shareIntent.putExtra(Intent.EXTRA_TEXT, mShareTrailer + APP_SHARE_HASHTAG);
+
+        return shareIntent;
     }
 
     @Override
@@ -307,6 +340,8 @@ public class DetailFragment extends Fragment {
 
     void addToFavorite() {
         AsyncQueryHandler mHandler;
+        if (mMovie == null)
+            return;
 
         Log.d(LOG_TAG, "addToFavorite " + mMovie.title);
 
@@ -378,7 +413,7 @@ public class DetailFragment extends Fragment {
             final String TMDB_NAME = "name";
             final String TMDB_KEY = "key";
 
-            final String TRAILER_BASE_URL = "https://www.youtube.com/watch?v=";
+//            final String TRAILER_BASE_URL = "https://www.youtube.com/watch?v=";
             final String THUMBNAIL_URL_PREFIX = "http://img.youtube.com/vi/";
             final String THUMBNAIL_URL_SUFFIX = "/0.jpg";
 
@@ -510,6 +545,18 @@ public class DetailFragment extends Fragment {
             if (trailerItems != null) {
                 mTrailerAdapter.addAll(trailerItems);
             }
+
+            // update share intent
+            // We still need this for the share intent
+            //mMovie.title + ", " + mTrailerItems.get(0).name + ", TRAILER_BASE_URL" + mTrailerItems.get(0).link
+            if (mMovie != null && !mTrailerItems.isEmpty()){
+                mShareTrailer = String.format("%s - %s, %s", mMovie.title, mTrailerItems.get(0).name, TRAILER_BASE_URL + mTrailerItems.get(0).link);
+
+                // If onCreateOptionsMenu has already happened, we need to update the share intent now.
+                if (mShareActionProvider != null) {
+                    mShareActionProvider.setShareIntent(createShareMovieIntent());
+                }
+            }
         }
     }
 
@@ -532,7 +579,8 @@ public class DetailFragment extends Fragment {
             startActivity(intent1);
         } else {
             Log.d(LOG_TAG, "Couldn't call " + youtubeLinkId + ", no receiving apps installed!");
-            Intent intent2 = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.youtube.com/watch?v=" + youtubeLinkId));
+            //"http://www.youtube.com/watch?v="
+            Intent intent2 = new Intent(Intent.ACTION_VIEW, Uri.parse(TRAILER_BASE_URL + youtubeLinkId));
             //intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent2);
         }
@@ -544,8 +592,9 @@ public class DetailFragment extends Fragment {
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + id));
             startActivity(intent);
         } catch (ActivityNotFoundException ex) {
+            //"http://www.youtube.com/watch?v="
             Intent intent = new Intent(Intent.ACTION_VIEW,
-                    Uri.parse("http://www.youtube.com/watch?v=" + id));
+                    Uri.parse(TRAILER_BASE_URL + id));
             startActivity(intent);
         }
     }
