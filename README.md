@@ -1,4 +1,4 @@
-# Popular Movies, Stage 1
+# Popular Movies, Stage 1-2
 
 ### The Movie Database API Key is required.
 
