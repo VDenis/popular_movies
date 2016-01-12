@@ -1,22 +1,13 @@
 package com.denis.home.popularmovies;
 
-import android.content.Context;
-import android.database.Cursor;
-import android.support.v4.widget.CursorAdapter;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
-
-import com.denis.home.popularmovies.data.MoviesContract;
-import com.squareup.picasso.Picasso;
-
 /**
  * Created by Denis on 23.12.2015.
  */
-public class NewMovieAdapter extends CursorAdapter {
+
+// Unused class
+public class NewMovieAdapter {}
+
+/*public class NewMovieAdapter extends CursorAdapter {
     private static final String LOG_TAG = NewMovieAdapter.class.getSimpleName();
     private Context mContext;
     private static int sLoaderID;
@@ -65,4 +56,4 @@ public class NewMovieAdapter extends CursorAdapter {
         int moviePoster = cursor.getInt(moviePosterCI);
         Picasso.with(context).load(moviePoster).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).into(viewHolder.imageView);
     }
-}
+}*/
